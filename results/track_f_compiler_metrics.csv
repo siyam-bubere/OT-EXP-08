@@ -1,0 +1,6 @@
+Pass,Instruction_Count,Reduction_%
+Original AST/TAC,26,0.0
+Constant Folding & Prop,26,0.0
+Common Subexpression Elim,26,0.0
+Loop-Invariant Code Motion,26,0.0
+Dead Code Elimination,20,23.076923076923073

@@ -1,0 +1,122 @@
+diff --git a/kernel/proc.h b/kernel/proc.h
+--- a/kernel/proc.h
++++ b/kernel/proc.h
+@@ -85,6 +85,11 @@ struct proc {
+   int killed;                  // If non-zero, have been killed
+   int xstate;                  // Exit status to be returned to parent's wait
+   int pid;                     // Process ID
++  int priority;                // MLFQ priority level: 0 (highest) to 3 (lowest)
++  int ticks_spent;             // CPU ticks consumed in current quantum
++  int wait_ticks;              // Ticks spent waiting in RUNNABLE state (for aging)
++  int total_wait;              // Cumulative wait time for telemetry
++  int total_runtime;           // Cumulative CPU execution time
+ 
+   // wait_lock must be held when using this:
+   struct proc *parent;         // Parent process
+diff --git a/kernel/proc.c b/kernel/proc.c
+--- a/kernel/proc.c
++++ b/kernel/proc.c
+@@ -12,6 +12,12 @@
+ #include "spinlock.h"
+ #include "proc.h"
+ #include "defs.h"
++
++#define MLFQ_LEVELS 4
++#define AGING_TICKS 16
++
++// Time slice quanta per priority queue level (Q0=1, Q1=2, Q2=4, Q3=8)
++static const int mlfq_quanta[MLFQ_LEVELS] = {1, 2, 4, 8};
+ 
+ struct cpu cpus[NCPU];
+ 
+@@ -124,6 +130,11 @@ allocproc(void)
+ found:
+   p->pid = allocpid();
+   p->state = USED;
++  p->priority = 0;             // New processes start at highest priority Q0
++  p->ticks_spent = 0;
++  p->wait_ticks = 0;
++  p->total_wait = 0;
++  p->total_runtime = 0;
+ 
+   // Allocate a trapframe page.
+   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
+@@ -440,32 +451,75 @@ scheduler(void)
+   struct proc *p;
+   struct cpu *c = mycpu();
+   
+   c->proc = 0;
+   for(;;){
+     // Avoid deadlock by ensuring devices can interrupt.
+     intr_on();
+ 
++    // Pass 1: Anti-Starvation Aging Sweep
++    for(p = proc; p < &proc[NPROC]; p++) {
++      acquire(&p->lock);
++      if(p->state == RUNNABLE) {
++        p->wait_ticks++;
++        p->total_wait++;
++        if(p->wait_ticks >= AGING_TICKS && p->priority > 0) {
++          p->priority--;        // Promote priority level
++          p->wait_ticks = 0;
++        }
++      }
++      release(&p->lock);
++    }
++
++    // Pass 2: Priority-based selection (highest priority queue first)
++    struct proc *best_p = 0;
++    int best_priority = MLFQ_LEVELS;
++
+     for(p = proc; p < &proc[NPROC]; p++) {
+       acquire(&p->lock);
+       if(p->state == RUNNABLE) {
+-        // Switch to chosen process.  It is the process's job
+-        // to release its lock and then reacquire it
+-        // before jumping back to us.
+-        p->state = RUNNING;
+-        c->proc = p;
+-        swtch(&c->context, &p->context);
+-
+-        // Process is done running for now.
+-        // It should have changed its p->state before coming back.
+-        c->proc = 0;
++        if(p->priority < best_priority) {
++          if(best_p)
++            release(&best_p->lock);
++          best_p = p;
++          best_priority = p->priority;
++          continue; // keep lock on candidate
++        }
+       }
+       release(&p->lock);
+     }
++
++    if(best_p != 0) {
++      // Execute best candidate within allocated quantum
++      p = best_p;
++      p->state = RUNNING;
++      c->proc = p;
++      p->wait_ticks = 0;
++
++      swtch(&c->context, &p->context);
++
++      // Post-execution: update quantum and feedback demotion
++      p->total_runtime++;
++      p->ticks_spent++;
++      if(p->state == RUNNABLE) {
++        if(p->ticks_spent >= mlfq_quanta[p->priority]) {
++          if(p->priority < MLFQ_LEVELS - 1)
++            p->priority++;      // Demote CPU-bound process
++          p->ticks_spent = 0;
++        }
++      } else {
++        // Process yielded or blocked on I/O: preserve priority
++        p->ticks_spent = 0;
++      }
++
++      c->proc = 0;
++      release(&p->lock);
++    }
+   }
+ }

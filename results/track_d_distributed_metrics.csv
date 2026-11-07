@@ -1,0 +1,5 @@
+Module,Greedy_Ratio,Theoretical_Bound,Guarantee_Met,Dynamic_Speedup,Static_Speedup,Efficiency,Final_Loss,Centralized_Loss,Speedup_Rounds,Task1_Loss,Task2_Loss,Balanced
+Submodular Coverage (k=5),1.0,0.6321205588285577,True,,,,,,,,,
+Parallel Speedup (p=2),,,,1.19,1.65,0.597,,,,,,
+FedAvg Distributed (E=20),,,,,,,0.0204,1.2208,15.0,,,
+Multi-Task GradNorm,,,,,,,,,,0.006169306426633139,0.07820489701879135,True

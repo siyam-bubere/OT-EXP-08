@@ -1,0 +1,4 @@
+Workload,RR_Avg_Turnaround,MLFQ_Avg_Turnaround,RR_Avg_Response,MLFQ_Avg_Response,RR_Avg_Wait,MLFQ_Avg_Wait,Response_Improvement_%,Turnaround_Improvement_%
+Workload 1 (CPU-Bound),234.875,236.0,3.5,12.5,200.125,201.25,-257.14285714285717,-0.4789781798829164
+Workload 2 (I/O-Bound),68.625,66.0,1.75,0.25,42.625,40.0,85.71428571428571,3.825136612021858
+Workload 3 (Mixed Batch/Interactive),105.75,89.0,2.0,11.75,76.25,59.5,-487.5,15.839243498817968

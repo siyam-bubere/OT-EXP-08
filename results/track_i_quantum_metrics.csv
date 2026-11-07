@@ -1,0 +1,8 @@
+Algorithm,Problem,Quantum_Queries,Classical_Queries,Speedup_Class,Empirical_Success
+Deutsch-Jozsa,Balanced vs Constant Oracle,1,5.0,Exponential (O(1) vs O(2^(n-1))),True
+Bernstein-Vazirani,Hidden Bitstring Recovery,1,3.0,Polynomial (1 query vs n),True
+Grover Search,Unsorted Database Search,2,4.0,Quadratic (O(sqrt(N)) vs O(N)),True
+QPE,Unitary Eigenphase Estimation,3,8.0,Exponential Precision,True
+Shor's Factoring,Integer Factorization,4,15.0,Superpolynomial / Exponential,True
+Quantum Annealing,Transverse-Field Max-Cut,30,64.0,Heuristic Tunneling Advantage,False
+VQC (Quantum ML),Non-Linear Classification,20,20.0,Sample / Parameter Efficiency,True

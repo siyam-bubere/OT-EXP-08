@@ -1,0 +1,4 @@
+Optimization,Metric,Baseline,Optimized,Improvement_%
+Selinger DP Join Tree,Cost Units,600050000.0,3807500.0,99.36546954420466
+Index Selection Knapsack,Storage (MB),4.4,2.5,0.0
+Physical Query Latency,Execution Time (ms),18.13831329345703,6.124591827392578,66.23395059781065

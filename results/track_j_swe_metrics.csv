@@ -1,0 +1,6 @@
+Optimization_Phase,Metric,Baseline,Optimized,Improvement_%
+Test Suite Minimization,Test Count,40.0,14.0,65.0
+Test Suite Minimization,CI Runtime (ms),2226.4058461162795,630.5654792896843,71.67787353821242
+Test Suite Minimization,Statement Coverage (%),100.0,100.0,0.0
+Test Prioritization (APFD),Random vs Optimized APFD,0.8354999999999999,0.9265,9.100000000000009
+Test Prioritization (APFD),SJF vs Optimized APFD,0.7394999999999999,0.9265,18.700000000000006
